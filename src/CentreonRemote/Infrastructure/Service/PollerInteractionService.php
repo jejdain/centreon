@@ -77,7 +77,6 @@ class PollerInteractionService
 
         $brokerObj = new \CentreonConfigCentreonBroker($this->db);
         $correlationPath = $brokerObj->getCorrelationFile();
-        $localId = getLocalhostId();
 
         foreach ($tabs as $tab) {
             if (in_array($tab['id'], $pollerIDs)) {
@@ -90,7 +89,7 @@ class PollerInteractionService
         }
 
         foreach ($tabServer as $host) {
-            if ($correlationPath !== false && $localId !== false) {
+            if ($correlationPath !== false && $host['localhost'] === '1') {
                 $tmpFilename = $centreonBrokerPath . '/' . $host['id'] . '/correlation_' . $host['id'] . '.xml';
                 $filenameToGenerate = dirname($correlationPath) . '/correlation_' . $host['id'] . '.xml';
 
