@@ -21,10 +21,12 @@ class PollerInteractionService
 
     public function __construct(Container $di)
     {
+        global $centreon;
+
         $this->di = $di;
         $this->db = $di[\Centreon\ServiceProvider::CENTREON_DB_MANAGER]->getAdapter('configuration_db')->getCentreonDBInstance();
 
-        $this->centreon = $GLOBALS['centreon'];
+        $this->centreon = $centreon;
     }
 
 
