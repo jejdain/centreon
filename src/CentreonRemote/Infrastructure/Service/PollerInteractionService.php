@@ -13,11 +13,18 @@ class PollerInteractionService
     /** @var \CentreonDB */
     private $db;
 
+    /**
+     * @var \Centreon
+     */
+    private $centreon;
+
 
     public function __construct(Container $di)
     {
         $this->di = $di;
         $this->db = $di[\Centreon\ServiceProvider::CENTREON_DB_MANAGER]->getAdapter('configuration_db')->getCentreonDBInstance();
+
+        $this->centreon = $GLOBALS['centreon'];
     }
 
 
@@ -32,11 +39,10 @@ class PollerInteractionService
 
     private function generateConfiguration(array $pollerIDs)
     {
-        $centreon = $_SESSION['centreon'];
         $username = 'unknown';
 
-        if (isset($centreon->user->name)) {
-            $username = $centreon->user->name;
+        if (isset($this->centreon->user->name)) {
+            $username = $this->centreon->user->name;
         }
 
         try {
@@ -58,7 +64,6 @@ class PollerInteractionService
 
     private function moveConfigurationFiles(array $pollerIDs)
     {
-        $centreon = $_SESSION['centreon'];
         $centreonBrokerPath = _CENTREON_PATH_ . '/filesGeneration/broker/';
 
         if (defined('_CENTREON_VARLIB_')) {
@@ -68,7 +73,7 @@ class PollerInteractionService
         }
 
         $tabServer = [];
-        $tabs = $centreon->user->access->getPollerAclConf([
+        $tabs = $this->centreon->user->access->getPollerAclConf([
             'fields'     => ['name', 'id', 'localhost'],
             'order'      => ['name'],
             'conditions' => ['ns_activate' => '1'],
@@ -125,7 +130,6 @@ class PollerInteractionService
 
     private function restartPoller(array $pollerIDs)
     {
-        $centreon = $_SESSION['centreon'];
         $tabServers = [];
 
         if (defined('_CENTREON_VARLIB_')) {
@@ -134,7 +138,7 @@ class PollerInteractionService
             $centCorePipe = '/var/lib/centreon/centcore.cmd';
         }
 
-        $tabs = $centreon->user->access->getPollerAclConf([
+        $tabs = $this->centreon->user->access->getPollerAclConf([
             'fields'     => ['name', 'id', 'localhost', 'init_script'],
             'order'      => ['name'],
             'conditions' => ['ns_activate' => '1'],
@@ -174,7 +178,7 @@ class PollerInteractionService
         }
 
         // Find restart actions in modules
-        foreach ($centreon->modules as $key => $value) {
+        foreach ($this->centreon->modules as $key => $value) {
             $moduleFiles = glob(_CENTREON_PATH_ . 'www/modules/' . $key . '/restart_pollers/*.php');
 
             if ($value['restart'] && $moduleFiles) {
